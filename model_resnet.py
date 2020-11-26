@@ -6,6 +6,11 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.nn.init import xavier_normal
 
+class ResNet(nn.Module):
+
+    def __init__(self):
+
+        return
 
 class SubNet(nn.Module):
     '''

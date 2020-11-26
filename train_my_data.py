@@ -1,6 +1,6 @@
 from __future__ import print_function
 from model import LMF
-from utils import total, load_pom
+from utils import *
 from torch.utils.data import DataLoader, Dataset
 from torch.autograd import Variable
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
@@ -18,6 +18,7 @@ def display(mae, corr, mult_acc):
     print("MAE on test set is {}".format(mae))
     print("Correlation w.r.t human evaluation on test set is {}".format(corr))
     print("Multiclass accuracy on test set is {}".format(mult_acc))
+
 
 def main(options):
     DTYPE = torch.FloatTensor
@@ -44,20 +45,20 @@ def main(options):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
-    train_set, valid_set, test_set, input_dims = load_pom(data_path)
+    train_set, valid_set, test_set, input_dims = load_my_data(data_path)
 
     params = dict()
-    params['audio_hidden'] = [4, 8, 16]
-    params['video_hidden'] = [4, 8, 16]
-    params['text_hidden'] = [64, 128, 256]
-    params['audio_dropout'] = [0, 0.1, 0.15, 0.2, 0.3, 0.5]
-    params['video_dropout'] = [0, 0.1, 0.15, 0.2, 0.3, 0.5]
-    params['text_dropout'] = [0, 0.1, 0.15, 0.2, 0.3, 0.5]
-    params['factor_learning_rate'] = [0.0003, 0.0005, 0.001, 0.003]
-    params['learning_rate'] = [0.0003, 0.0005, 0.001, 0.003]
-    params['rank'] = [1, 4, 8, 16]
-    params['batch_size'] = [4, 8, 16, 32, 64, 128]
-    params['weight_decay'] = [0, 0.001, 0.002, 0.01]
+    params['audio_hidden'] = [156]
+    params['video_hidden'] = [2048]
+    params['text_hidden'] = [1024]
+    params['audio_dropout'] = [0.15]
+    params['video_dropout'] = [0.15]
+    params['text_dropout'] = [0.15]
+    params['factor_learning_rate'] = [0.0001]
+    params['learning_rate'] = [0.0001]
+    params['rank'] = [16]
+    params['batch_size'] = [1]
+    params['weight_decay'] = [0.01]
 
     total_settings = total(params)
 
@@ -67,59 +68,60 @@ def main(options):
 
     with open(output_path, 'w+') as out:
         writer = csv.writer(out)
-        writer.writerow(["audio_hidden", "video_hidden", 'text_hidden', 'audio_dropout', 'video_dropout', 'text_dropout',
-                        'factor_learning_rate', 'learning_rate', 'rank', 'batch_size', 'weight_decay', 'Best Validation MAE', 
+        writer.writerow(
+            ["audio_hidden", "video_hidden", 'text_hidden', 'audio_dropout', 'video_dropout', 'text_dropout',
+             'factor_learning_rate', 'learning_rate', 'rank', 'batch_size', 'weight_decay', 'Best Validation MAE',
 
-                        'Confidence accuracy',
-                        'Passionate accuracy',
-                        'Pleasant accuracy',
-                        'Dominant accuracy',
-                        'Credible accuracy',
-                        'Vivid accuracy',
-                        'Expertise accuracy',
-                        'Entertaining accuracy',
-                        'Reserved accuracy',
-                        'Trusting accuracy',
-                        'Relaxed accuracy',
-                        'Outgoing accuracy',
-                        'Thorough accuracy',
-                        'Nervous accuracy',
-                        'Persuasive accuracy',
-                        'Humorous accuracy',
+             'Confidence accuracy',
+             'Passionate accuracy',
+             'Pleasant accuracy',
+             'Dominant accuracy',
+             'Credible accuracy',
+             'Vivid accuracy',
+             'Expertise accuracy',
+             'Entertaining accuracy',
+             'Reserved accuracy',
+             'Trusting accuracy',
+             'Relaxed accuracy',
+             'Outgoing accuracy',
+             'Thorough accuracy',
+             'Nervous accuracy',
+             'Persuasive accuracy',
+             'Humorous accuracy',
 
-                        'Confidence MAE',
-                        'Passionate MAE',
-                        'Pleasant MAE',
-                        'Dominant MAE',
-                        'Credible MAE',
-                        'Vivid MAE',
-                        'Expertise MAE',
-                        'Entertaining MAE',
-                        'Reserved MAE',
-                        'Trusting MAE',
-                        'Relaxed MAE',
-                        'Outgoing MAE',
-                        'Thorough MAE',
-                        'Nervous MAE',
-                        'Persuasive MAE',
-                        'Humorous MAE',
+             'Confidence MAE',
+             'Passionate MAE',
+             'Pleasant MAE',
+             'Dominant MAE',
+             'Credible MAE',
+             'Vivid MAE',
+             'Expertise MAE',
+             'Entertaining MAE',
+             'Reserved MAE',
+             'Trusting MAE',
+             'Relaxed MAE',
+             'Outgoing MAE',
+             'Thorough MAE',
+             'Nervous MAE',
+             'Persuasive MAE',
+             'Humorous MAE',
 
-                        'Confidence corr',
-                        'Passionate corr',
-                        'Pleasant corr',
-                        'Dominant corr',
-                        'Credible corr',
-                        'Vivid corr',
-                        'Expertise corr',
-                        'Entertaining corr',
-                        'Reserved corr',
-                        'Trusting corr',
-                        'Relaxed corr',
-                        'Outgoing corr',
-                        'Thorough corr',
-                        'Nervous corr',
-                        'Persuasive corr',
-                        'Humorous corr'])
+             'Confidence corr',
+             'Passionate corr',
+             'Pleasant corr',
+             'Dominant corr',
+             'Credible corr',
+             'Vivid corr',
+             'Expertise corr',
+             'Entertaining corr',
+             'Reserved corr',
+             'Trusting corr',
+             'Relaxed corr',
+             'Outgoing corr',
+             'Thorough corr',
+             'Nervous corr',
+             'Persuasive corr',
+             'Humorous corr'])
 
     for i in range(total_settings):
 
@@ -133,7 +135,7 @@ def main(options):
         factor_lr = random.choice(params['factor_learning_rate'])
         lr = random.choice(params['learning_rate'])
         r = random.choice(params['rank'])
-        batch_sz = 2
+        batch_sz = 4
         # batch_sz = random.choice(params['batch_size'])
         decay = random.choice(params['weight_decay'])
 
@@ -152,7 +154,8 @@ def main(options):
         criterion = nn.L1Loss(size_average=False)
         factors = list(model.parameters())[:3]
         other = list(model.parameters())[3:]
-        optimizer = optim.Adam([{"params": factors, "lr": factor_lr}, {"params": other, "lr": lr}], weight_decay=decay) # don't optimize the first 2 params, they should be fixed (output_range and shift)
+        optimizer = optim.Adam([{"params": factors, "lr": factor_lr}, {"params": other, "lr": lr}],
+                               weight_decay=decay)  # don't optimize the first 2 params, they should be fixed (output_range and shift)
 
         # setup training
         complete = True
@@ -205,7 +208,6 @@ def main(options):
                 complete = False
                 break
 
-
             avg_valid_loss = avg_valid_loss / len(valid_set)
             print("Validation loss is: {}".format(avg_valid_loss))
 
@@ -216,13 +218,13 @@ def main(options):
                 print("Found new best model, saving to disk...")
             else:
                 curr_patience -= 1
-            
-            if curr_patience <= 0:
-                break
+
+            # if curr_patience <= 0:
+            #     break
             print("\n\n")
 
         if complete:
-            
+
             best_model = torch.load(model_path)
             best_model.eval()
             for batch in test_iterator:
@@ -242,11 +244,13 @@ def main(options):
             mae = np.mean(np.absolute(output_test - y), axis=0)
             mae = [round(a, 3) for a in mae]
             corr = [round(np.corrcoef(output_test[:, i], y[:, i])[0][1], 3) for i in range(y.shape[1])]
-            mult_acc = [round(sum(np.round(output_test[:, i]) == np.round(y[:, i])) / float(len(y)), 3) for i in range(y.shape[1])]
+            mult_acc = [round(sum(np.round(output_test[:, i]) == np.round(y[:, i])) / float(len(y)), 3) for i in
+                        range(y.shape[1])]
 
             display(mae, corr, mult_acc)
 
-            results = [ahid, vhid, thid, adr, vdr, tdr, factor_lr, lr, r, batch_sz, decay, min_valid_loss]
+            results = [ahid, vhid, thid, adr, vdr, tdr, factor_lr, lr, r, batch_sz, decay,
+                       min_valid_loss]
 
             results.extend(mult_acc)
             results.extend(mae)
@@ -259,12 +263,12 @@ def main(options):
 
 if __name__ == "__main__":
     OPTIONS = argparse.ArgumentParser()
-    OPTIONS.add_argument('--run_id', dest='run_id', type=int, default=1)
-    OPTIONS.add_argument('--epochs', dest='epochs', type=int, default=500)
-    OPTIONS.add_argument('--patience', dest='patience', type=int, default=1)
-    OPTIONS.add_argument('--output_dim', dest='output_dim', type=int, default=16) # for 16 speaker traits
+    OPTIONS.add_argument('--run_id', dest='run_id', type=int, default=86)
+    OPTIONS.add_argument('--epochs', dest='epochs', type=int, default=64)
+    OPTIONS.add_argument('--patience', dest='patience', type=int, default=20)
+    OPTIONS.add_argument('--output_dim', dest='output_dim', type=int, default=3)  # for 16 speaker traits
     OPTIONS.add_argument('--signiture', dest='signiture', type=str, default='')
-    OPTIONS.add_argument('--cuda', dest='cuda', type=bool, default=True)
+    OPTIONS.add_argument('--cuda', dest='cuda', type=bool, default=False)
     OPTIONS.add_argument('--data_path', dest='data_path',
                          type=str, default='/home/jack/PycharmProjects/LowrankMultimodalFusion/data/')
     OPTIONS.add_argument('--model_path', dest='model_path',

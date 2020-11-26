@@ -105,3 +105,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+*.jpg
+.idea
+*.wav
+*.mp4
+*.txt
+*.pt
+*.pkl
+*.csv
